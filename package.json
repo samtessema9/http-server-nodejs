@@ -1,0 +1,19 @@
+{
+  "name": "http-server-nodejs",
+  "version": "1.0.0",
+  "description": "Implementing a barebones version of the http protocol.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samtessema9/http-server-nodejs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samtessema9/http-server-nodejs/issues"
+  },
+  "homepage": "https://github.com/samtessema9/http-server-nodejs#readme"
+}
