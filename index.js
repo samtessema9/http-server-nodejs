@@ -1,5 +1,7 @@
 const net = require("net");
+const fs = require('fs');
 const Request = require('./request');
+const blockFor = require("./util")
 
 const server = net.createServer((connection) => { 
     console.log('client connected');
@@ -15,10 +17,10 @@ const server = net.createServer((connection) => {
     connection.on('data', (data) => {
         let request = new Request()
         request.parse(data.toString())
-
         path = request.requestLine.path
 
         if (path == "/") {
+            blockFor(3000)
             connection.write("HTTP/1.1 200 OK\r\n\r\n")
         } 
         
@@ -60,6 +62,42 @@ const server = net.createServer((connection) => {
 
             connection.write(response)
         }
+
+        else if (path.startsWith("/files")) {
+            let fileName = path.split("/")[2]
+            let filePath = `./tmp/${fileName}`
+
+            if (fs.existsSync(filePath)) {
+                try {
+                    const fileBuffer = fs.readFileSync(filePath) 
+                
+                    const headers =
+                        'HTTP/1.1 200 OK\r\n' +
+                        'Content-Type: application/octet-stream\r\n' +
+                        `Content-Length: ${fileBuffer.length}\r\n` +
+                        '\r\n';
+
+                    // convert headers to a Buffer & combine the header and file buffers
+                    const headersBuffer = Buffer.from(headers, 'utf8');
+                    const responseBuffer = Buffer.concat([headersBuffer, fileBuffer]);
+
+                    connection.write(responseBuffer);
+                } catch (err) {
+                    console.error('Error reading file:', err)
+                    connection.write(
+                        `HTTP/1.1 500 Internal Server Error\r\n` +
+                        `Content-Length: 19\r\n` +
+                        `Connection: close\r\n` +
+                        `\r\n` +
+                        `Error parsing file.`
+                    )
+                }
+            } else {
+                console.error('File not found.')
+                connection.write("HTTP/1.1 404 Not Found\r\n\r\n")
+            }
+
+        }
         
         else {
             connection.write("HTTP/1.1 404 Not Found\r\n\r\n")
@@ -70,5 +108,5 @@ const server = net.createServer((connection) => {
 });
 
 server.listen(8080, function() { 
-   console.log('server is listening');
+   console.log('server is listening on port 8080...');
 });
