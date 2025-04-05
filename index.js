@@ -19,8 +19,8 @@ const server = net.createServer((connection) => {
         request.parse(data.toString())
         path = request.requestLine.path
 
-        if (path == "/") {
-            blockFor(3000)
+        if (path == "/" || path == "") {
+            // blockFor(3000)
             connection.write("HTTP/1.1 200 OK\r\n\r\n")
         } 
         
@@ -64,8 +64,14 @@ const server = net.createServer((connection) => {
         }
 
         else if (path.startsWith("/files")) {
+            // Remove the first 2 args (node main.go)
+            const args = process.argv.slice(2); 
+
+            // Grab filepath from args
+            let filepath = args[1] 
+
             let fileName = path.split("/")[2]
-            let filePath = `./tmp/${fileName}`
+            let filePath = `${filepath}${fileName}`
 
             if (request.requestLine.method == "GET") {
                 if (fs.existsSync(filePath)) {
@@ -124,6 +130,6 @@ const server = net.createServer((connection) => {
     });
 });
 
-server.listen(8080, function() { 
-   console.log('server is listening on port 8080...');
+server.listen(4221, function() { 
+   console.log('server is listening on port 4221...');
 });
