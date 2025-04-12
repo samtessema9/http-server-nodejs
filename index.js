@@ -1,7 +1,8 @@
 const net = require("net");
 const fs = require('fs');
+const zlib = require('zlib');
 const Request = require('./request');
-const blockFor = require("./util")
+const { blockFor, parseAcceptEncodingHeader } = require("./util");
 
 const server = net.createServer((connection) => { 
     console.log('client connected');
@@ -20,21 +21,32 @@ const server = net.createServer((connection) => {
         path = request.requestLine.path
 
         if (path == "/" || path == "") {
-            // blockFor(3000)
             connection.write("HTTP/1.1 200 OK\r\n\r\n")
         } 
         
         else if (path.startsWith("/echo")) {
             let arg = path.split("/")[2]
-            const response =
-                'HTTP/1.1 200 OK\r\n' +
-                'Content-Type: text/plain\r\n' +
-                `Content-Length: ${arg.length}\r\n` +
-                'Connection: close\r\n' +
-                '\r\n' + 
-                arg;
 
-            connection.write(response)
+            let response = 
+                    'HTTP/1.1 200 OK\r\n' + 
+                    'Content-Type: text/plain\r\n'
+
+            const acceptEncoding = request.headers.get("Accept-Encoding")
+            if (acceptEncoding && parseAcceptEncodingHeader(acceptEncoding).includes("gzip")) {
+                const compressedData = zlib.gzipSync(arg);
+                const compressedDataLength = compressedData.length;
+
+                response += 'Content-Encoding: gzip\r\n'  
+                response += `Content-Length: ${compressedDataLength}\r\n\r\n`
+                
+                // Convert headers to Buffer and combine with compressed data
+                const headerBuffer = Buffer.from(response)
+                const responseBuffer = Buffer.concat([headerBuffer, compressedData])
+                connection.write(responseBuffer)
+            } else {
+                response += `Content-Length: ${arg.length}\r\n\r\n${arg}`
+                connection.write(response)
+            }
         } 
 
         else if (path == "/user-agent") {
