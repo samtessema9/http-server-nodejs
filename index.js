@@ -76,7 +76,7 @@ const server = net.createServer((connection) => {
         }
 
         else if (path.startsWith("/files")) {
-            // Remove the first 2 args (node main.go)
+            // Remove the first 2 args (node index.js)
             const args = process.argv.slice(2); 
 
             // Grab filepath from args
