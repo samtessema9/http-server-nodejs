@@ -6,13 +6,13 @@ function blockFor(ms) {
 }
 
 function parseAcceptEncodingHeader(encodings) {
-let encodingList = encodings.split(",")
-let trimmedList = encodingList.map(item => item.trim());
+  let encodingList = encodings.split(",")
+  let trimmedList = encodingList.map(item => item.trim());
 
-return trimmedList
+  return trimmedList
 }
 
 module.exports = {
-blockFor,
-parseAcceptEncodingHeader
+  blockFor,
+  parseAcceptEncodingHeader
 };
